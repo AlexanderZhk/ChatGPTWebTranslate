@@ -25,14 +25,17 @@ def load_list_of_dicts(file_name):
 import time
 
 class ChatGPTHandlerC:
-    options = Options()
-    # set the headless mode to False to run the browser in GUI mode
-    options.headless = False
-    options.add_argument("--app=https://chat.openai.com/chat")
-    options.add_argument("--incognito")
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    # create a webdriver instance with the ChromeOptions
-    driver = uc.Chrome(options=options)
+
+    def __init__(self):
+        self.options = Options()
+        # set the headless mode to False to run the browser in GUI mode
+        self.options.headless = False
+        self.options.add_argument("--app=https://chat.openai.com/chat")
+        self.options.add_argument("--incognito")
+        self.options.add_argument('--disable-blink-features=AutomationControlled')
+
+        # create a webdriver instance with the ChromeOptions
+        self.driver = uc.Chrome(options=self.options)
     def start(self):
 
         self.driver.get("https://chat.openai.com/chat")

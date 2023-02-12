@@ -3,10 +3,15 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 import time
 import ChatGPTHandler
+import tkinter as tk
+from tkinter import *
 import GUI
 from DeepLHandler import DeepLHandlerC
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    root = Tk()
+    window = GUI.ChatWindow(root)
+    root.mainloop()
     ChatGPT=ChatGPTHandler.ChatGPTHandlerC()
     ChatGPT.start()
     inputtext = 8
