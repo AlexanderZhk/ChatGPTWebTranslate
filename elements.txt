@@ -1,0 +1,19 @@
+Element Text: As a language model, I have been trained to do many things, including but not limited to:
+Responding to questions: I can answer questions on a wide range of topics such as history, science, geography, and current events.
+Conversational AI: I can hold a conversation with you on various topics, generate new text based on the context of the conversation and answer follow-up questions.
+Text completion: I can complete a given prompt or text by generating the next sentence, paragraph or even a whole story.
+Summarization: I can summarize long pieces of text into concise and coherent versions while retaining the most important information.
+Text classification: I can categorize text into predefined categories or labels based on their content.
+Translation: I can translate text from one language to another, although my training data has a strong focus on English.
+Text generation: I can generate new text based on a given prompt, such as creating a story, poem, or song.
+I am constantly learning and improving, so this list is not exhaustive. If you have a specific task in mind, please let me know and I'll do my best to assist you.
+Class Name: markdown prose w-full break-words dark:prose-invert light
+
+Element Text: Sure! Here's a classic one:
+Why did the tomato turn red?
+Because it saw the salad dressing!
+Class Name: markdown prose w-full break-words dark:prose-invert light
+
+Element Text: I have been trained on text in many languages, including English, Spanish, German, French, and more. However, my training data is most comprehensive for English, so my ability to understand and generate text in English is the strongest. That being said, I can still respond to questions and generate text in other languages, although the accuracy and fluency of my responses may be lower than in English. Additionally, the diversity and quality of my training data for different languages can also impact my ability to perform well in those languages.
+Class Name: markdown prose w-full break-words dark:prose-invert light
+
