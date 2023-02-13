@@ -6,6 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+import os
+import threading
 
 import json
 
@@ -27,6 +29,9 @@ import time
 class ChatGPTHandlerC:
 
     def __init__(self):
+        self.state = "Initializing"
+        self.started = False
+        self.working = False
         self.options = Options()
         # set the headless mode to False to run the browser in GUI mode
         self.options.headless = False
@@ -34,10 +39,23 @@ class ChatGPTHandlerC:
         self.options.add_argument("--incognito")
         self.options.add_argument('--disable-blink-features=AutomationControlled')
 
+        if not os.path.exists("cookies.txt"):
+            with open("cookies.txt", "w") as file:
+                file.write("")
+
+
         # create a webdriver instance with the ChromeOptions
         self.driver = uc.Chrome(options=self.options)
-    def start(self):
 
+    def clear_cookies(self):
+        with open("cookies.txt", "w") as file:
+            file.write("")
+        self.driver.delete_all_cookies()
+        ChatGPT_start_thread = threading.Thread(target=self.start)
+        ChatGPT_start_thread.start()
+
+    def start(self):
+        self.state = "Loading"
         self.driver.get("https://chat.openai.com/chat")
         cookieslist = load_list_of_dicts("cookies.txt")
         for d in cookieslist:
@@ -50,6 +68,7 @@ class ChatGPTHandlerC:
         found = 0
         while found == 0:
             try:
+                self.state = "Logged in"
                 element = self.driver.find_element(By.XPATH, "//*[text()='Clear conversations']")
                 print("Element with the text 'Clear Conversations' is present on the page")
                 found = 1
@@ -69,10 +88,16 @@ class ChatGPTHandlerC:
                         print(type(self.driver.get_cookies()))
                 #self.driver.minimize_window()
             except:
+                self.state = "Logging in"
                 print("Element with the text 'Clear Conversations' is not present on the page")
                 time.sleep(1)
+        self.started = True
 
     def Query(self,text):
+        while self.started == False:
+            time.sleep(1)
+        self.working = True
+        self.state = "ChatGPT Query"
         try:
             textarea = self.driver.find_element(By.XPATH, "//textarea")
             textarea.clear()
@@ -81,13 +106,17 @@ class ChatGPTHandlerC:
         except:
             url = self.driver.current_url
             self.driver.get(url)
-            return "Error"
+            return "Error, retry prompt"
         generating = True
-        answer = "Internal Application Error"
+        answer = "Application Error"
         time.sleep(3)
         while generating == True:
             print("11")
-            elements = self.driver.find_elements(By.XPATH,'//*[@class="markdown prose w-full break-words dark:prose-invert light"]')
+            self.state = "ChatGPT Answering"
+            try:
+                elements = self.driver.find_elements(By.XPATH,'//*[@class="markdown prose w-full break-words dark:prose-invert light"]')
+            except:
+                pass
             if elements:
                 try:
                     self.driver.find_element(By.XPATH,'//*[@class="text-2xl"]')
@@ -101,6 +130,8 @@ class ChatGPTHandlerC:
                                                    '//*[text()="An error occurred. If this issue persists please contact us through our help center at help.openai.com."')
                 url = self.driver.current_url
                 self.driver.get(url)
+                self.state = "ChatGPT minor Error, reloading"
+                time.sleep(2)
             except:
                 pass
             try:
@@ -112,6 +143,7 @@ class ChatGPTHandlerC:
                 pass
         #print(answer)
 
+        self.state = "ChatGPT Answer Received"
 
         with open("elements.txt", "w") as f:
             for element in elements:
@@ -122,4 +154,4 @@ class ChatGPTHandlerC:
                 # Write the element text and class name to the file
                 f.write(f'Element Text: {element_text}\nClass Name: {class_name}\n\n')
         return answer
-
+        self.working = False
