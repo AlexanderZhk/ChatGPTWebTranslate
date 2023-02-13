@@ -5,8 +5,9 @@ import threading
 class ChatWindow:
 
 
-    def __init__(self, master, ChatGPTclass):
+    def __init__(self, master, ChatGPTclass,DeepLclass):
         self.ChatGPT = ChatGPTclass
+        self.DeepL = DeepLclass
         self.InputQue = queue.Queue()
         self.query_lock = threading.Lock()
         self.processing_flag = False
@@ -24,12 +25,22 @@ class ChatWindow:
         self.cookie_button = Button(settingsframe, text="Reset cookies", command = self.reset_cookies)
         self.cookie_button.grid(row=0, column=1, padx=10)
 
-        self.reload_button = Button(settingsframe, text="Reload ChatGPT", command = self.reload_ChatGPT)
-        self.reload_button.grid(row=0, column=2, padx=10)
+        self.reload_ChatGPT_button = Button(settingsframe, text="Reload ChatGPT", command = self.reload_ChatGPT)
+        self.reload_ChatGPT_button.grid(row=0, column=2, padx=10)
 
 
         self.DeepL_label = tk.Label(settingsframe, text="DeepL:\n Some Text")
-        self.DeepL_label.grid(row=2, column=0, sticky="W")
+        self.DeepL_label.grid(row=1, column=0, sticky="W")
+
+        self.language_dropdown_options = ["Option 1", "Option 2", "Option 3"]
+        self.language_dropdown_selected = tk.StringVar()
+        self.language_dropdown_selected.set(self.language_dropdown_options[0])
+        self.language_dropdown = tk.OptionMenu(settingsframe,self.language_dropdown_selected, *self.language_dropdown_options)
+        self.language_dropdown.grid(row=1, column=1, padx=5)
+
+        self.reload_DeepL_button = Button(settingsframe, text="Reload DeepL", command=self.reload_DeepL)
+        self.reload_DeepL_button.grid(row=1, column=2, padx=10)
+
 
 
         chatframe= tk.Frame(master)
@@ -51,7 +62,7 @@ class ChatWindow:
         self.send_button = Button(chatframe, text="Send", command=self.user_message)
         self.send_button.pack()
 
-        self.master.after(100, self.process_user_messages)
+        self.master.after(100, self.update_GUI_loop)
 
     def user_message(self,event=None):
         message = self.entry.get()
@@ -71,18 +82,25 @@ class ChatWindow:
         self.text_area.see(END)
 
     def process_user_messages(self,event=None):
-        print("quesize",self.InputQue.qsize())
+        #print("quesize",self.InputQue.qsize())
         if self.InputQue.qsize() > 0 and self.query_lock.acquire(blocking=False) and not self.processing_flag:
             self.processing_flag = True
             input = self.InputQue.get()
             print("Removed from que: ", input)
             ProcessMessagesThread = threading.Thread(target=self.process_user_messages_thread,args=(input,))
             ProcessMessagesThread.start()
-        self.master.after(300, self.process_user_messages)
 
+
+    def update_GUI_loop(self,event=None):
+        self.process_user_messages()
+        self.ChatGPT_label.config(text="ChatGPT:\n"+ self.ChatGPT.state)
+        self.DeepL_label.config(text="DeepL:\n" + self.DeepL.state)
+        self.master.after(100, self.update_GUI_loop)
 
     def reset_cookies(self, event=None):
         self.ChatGPT.clear_cookies()
 
     def reload_ChatGPT(self,event=None):
         self.ChatGPT.reload()
+    def reload_DeepL(self,event=None):
+        pass

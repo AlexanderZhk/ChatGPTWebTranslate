@@ -12,23 +12,14 @@ from DeepLHandler import DeepLHandlerC
 if __name__ == '__main__':
     ChatGPT = ChatGPTHandler.ChatGPTHandlerC()
     root = Tk()
-    window = GUI.ChatWindow(root,ChatGPT)
+    Deepl = DeepLHandlerC()
+    window = GUI.ChatWindow(root,ChatGPT,Deepl)
     ChatGPT_start_thread = threading.Thread(target=ChatGPT.start)
+    DeepL_start_thread = threading.Thread(target=Deepl.start,args=("English","Russian",))
     ChatGPT_start_thread.start()
+    DeepL_start_thread.start()
     root.mainloop()
 
-
-    inputtext = 8
-
-    Deepl = DeepLHandlerC()
-    Deepl.start("English","Russian")
-    #GUI.RunGUI(Deepl)
-    while inputtext !="e":
-        inputtext = input()
-        translatedtext = Deepl.translate(inputtext,1)
-        ChatGPTAnswer = ChatGPT.Query(translatedtext)
-        print( Deepl.translate(ChatGPTAnswer,0))
-    input()
 
 
 
