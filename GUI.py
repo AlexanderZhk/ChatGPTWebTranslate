@@ -13,13 +13,24 @@ class ChatWindow:
 
         self.master = master
         self.master.title("Chat Window")
-        self.master.geometry("400x600")
+        self.master.geometry("500x600")
 
         settingsframe = tk.Frame(master)
-        settingsframe.pack(side=tk.TOP)
+        settingsframe.pack()
+        settingsframe.columnconfigure(0, minsize=200)
+        self.ChatGPT_label = tk.Label(settingsframe, text="ChatGPT:\n Some Text")
+        self.ChatGPT_label.grid(row=0, column=0, sticky="W")
 
         self.cookie_button = Button(settingsframe, text="Reset cookies", command = self.reset_cookies)
-        self.cookie_button.pack()
+        self.cookie_button.grid(row=0, column=1, padx=10)
+
+        self.reload_button = Button(settingsframe, text="Reload ChatGPT", command = self.reload_ChatGPT)
+        self.reload_button.grid(row=0, column=2, padx=10)
+
+
+        self.DeepL_label = tk.Label(settingsframe, text="DeepL:\n Some Text")
+        self.DeepL_label.grid(row=2, column=0, sticky="W")
+
 
         chatframe= tk.Frame(master)
         chatframe.pack(side=tk.BOTTOM)
@@ -27,7 +38,7 @@ class ChatWindow:
         self.scrollbar = Scrollbar(chatframe)
         self.scrollbar.pack(side=RIGHT, fill=Y)
 
-        self.text_area = Text(chatframe, height=20, width=45, yscrollcommand=self.scrollbar.set)
+        self.text_area = Text(chatframe, height=20, width=55, yscrollcommand=self.scrollbar.set)
         self.text_area.pack(expand=True, fill=BOTH)
         self.text_area.config(state=DISABLED)
 
@@ -51,12 +62,13 @@ class ChatWindow:
         self.entry.delete(0, END)
         self.text_area.see(END)
     def process_user_messages_thread(self,message):
-        answer = self.ChatGPT.Query(self.InputQue.get())
+        answer = self.ChatGPT.Query(message)
         self.text_area.config(state=NORMAL)
         self.text_area.insert(END, "ChatGPT: " + answer + "\n")
         self.text_area.config(state=DISABLED)
         self.query_lock.release()
         self.processing_flag = False
+        self.text_area.see(END)
 
     def process_user_messages(self,event=None):
         print("quesize",self.InputQue.qsize())
@@ -71,3 +83,6 @@ class ChatWindow:
 
     def reset_cookies(self, event=None):
         self.ChatGPT.clear_cookies()
+
+    def reload_ChatGPT(self,event=None):
+        self.ChatGPT.reload()

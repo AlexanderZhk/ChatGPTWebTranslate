@@ -32,6 +32,7 @@ class ChatGPTHandlerC:
         self.state = "Initializing"
         self.started = False
         self.working = False
+        self.start_flag = False
         self.options = Options()
         # set the headless mode to False to run the browser in GUI mode
         self.options.headless = False
@@ -54,7 +55,27 @@ class ChatGPTHandlerC:
         ChatGPT_start_thread = threading.Thread(target=self.start)
         ChatGPT_start_thread.start()
 
+    def save_cookies(self):
+        print(self.driver.get_cookies())
+        save_list_of_dicts("cookies.txt", self.driver.get_cookies())
+        print(type(self.driver.get_cookies()))
+
+    def removebotpreventscreen(self):
+        try:
+            element = self.driver.find_element(By.XPATH,
+                                               "//div[@id='headlessui-dialog-:r0:' and @role='dialog']")
+            self.driver.execute_script("arguments[0].remove();", element)
+            print("click")
+        except:
+           pass
+    def reload(self):
+        self.driver.get("https://chat.openai.com/chat")
+        time.sleep(1)
+        self.removebotpreventscreen()
     def start(self):
+        if self.start_flag:
+            return
+        self.start_flag = True
         self.state = "Loading"
         self.driver.get("https://chat.openai.com/chat")
         cookieslist = load_list_of_dicts("cookies.txt")
@@ -72,28 +93,24 @@ class ChatGPTHandlerC:
                 element = self.driver.find_element(By.XPATH, "//*[text()='Clear conversations']")
                 print("Element with the text 'Clear Conversations' is present on the page")
                 found = 1
-
-                NextButtons = 1
-                while NextButtons == 1:
-                    time.sleep(1)
-                    try:
-                        element = self.driver.find_element(By.XPATH,
-                                                      "//div[@id='headlessui-dialog-:r0:' and @role='dialog']")
-                        self.driver.execute_script("arguments[0].remove();", element)
-                        print("click")
-                    except:
-                        NextButtons=0
-                        print(self.driver.get_cookies())
-                        save_list_of_dicts("cookies.txt",self.driver.get_cookies())
-                        print(type(self.driver.get_cookies()))
+                self.removebotpreventscreen()
+                self.save_cookies()
                 #self.driver.minimize_window()
             except:
                 self.state = "Logging in"
                 print("Element with the text 'Clear Conversations' is not present on the page")
                 time.sleep(1)
         self.started = True
+        self.start_flag = False
 
     def Query(self,text):
+        self.removebotpreventscreen()
+        try:
+            element = self.driver.find_element(By.XPATH,
+                                               "//div[@id='headlessui-dialog-:r0:' and @role='dialog']")
+            self.driver.execute_script("arguments[0].remove();", element)
+        except:
+            pass
         while self.started == False:
             time.sleep(1)
         self.working = True
@@ -132,6 +149,7 @@ class ChatGPTHandlerC:
                 self.driver.get(url)
                 self.state = "ChatGPT minor Error, reloading"
                 time.sleep(2)
+                self.removebotpreventscreen_savecookies()
             except:
                 pass
             try:
