@@ -1,10 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 import time
 import threading
 
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 
@@ -13,21 +15,24 @@ class DeepLHandlerC:
 
     def __init__(self):
         # create a ChromeOptions instance
-        options = Options()
+        self.options = Options()
         # set the headless mode to False to run the browser in GUI mode
-        options.headless = False
+        self.options.headless = True
+        self.options2 = Options()
+        self.options2.headless= True
         # create a webdriver instance with the ChromeOptions
-        self.driver_norm = webdriver.Chrome(options=options)
+        self.driver_norm = uc.Chrome(options=self.options)
         self.driversource = 0
         self.drivertarget = 0
-        self.driver_reverse = webdriver.Chrome(options=options)
+        self.driver_reverse = uc.Chrome(options=self.options2)
         self.start_flag = False
         self.state = "Initializing"
+        self.availablelanguages = ["Russian"]
 
     def SetLanguageInDriver(self, driver, Language0, Language1):
         sourcelanguageClass = driver.find_element(By.CLASS_NAME, "lmt__language_select--source")
         sourcelanguageSelected = sourcelanguageClass.find_element(By.CLASS_NAME, "lmt__language_select__active__title")
-        if sourcelanguageSelected.text != "English":
+        if sourcelanguageSelected.text != Language0:
             sourcelanguageClass.click()
             time.sleep(2)
             sourcelanguageDropdown = driver.find_element(By.CLASS_NAME, "lmt__language_wrapper")
@@ -42,7 +47,7 @@ class DeepLHandlerC:
 
         targetlanguageClass = driver.find_element(By.CLASS_NAME, "lmt__language_select--target")
         targetlanguageSelected = targetlanguageClass.find_element(By.CLASS_NAME, "lmt__language_select__active__title")
-        if targetlanguageSelected.text != "Russian":
+        if targetlanguageSelected.text != Language1:
             targetlanguageClass.click()
             time.sleep(1)
             targetlanguageDropdown = driver.find_element(By.CLASS_NAME, "lmt__language_wrapper")
@@ -53,6 +58,41 @@ class DeepLHandlerC:
             with open("targetlanguageDropdownEnglish.png", "wb") as f:
                 f.write(image)
             targetlanguageDropdownRus.click()
+    def getlanguages(self):
+        targetlanguageClass = WebDriverWait(self.driver_reverse, 10).until( EC.presence_of_element_located((By.CLASS_NAME, "lmt__language_select--target")))
+        sourcelanguageClass = WebDriverWait(self.driver_norm, 10).until( EC.presence_of_element_located((By.CLASS_NAME, "lmt__language_select--source")))
+        targetlanguageClass.click()
+        sourcelanguageClass.click()
+        time.sleep(1)
+        sourcelanguageelements =  [element.text for element in self.driver_reverse.find_elements(By.XPATH, "//button[contains(@dl-test, 'translator-lang-option')]")]
+        targetlanguageelements = [element.text for element in self.driver_reverse.find_elements(By.XPATH, "//button[contains(@dl-test, 'translator-lang-option')]")]
+        while len(targetlanguageelements) == 0:
+            try:
+                targetlanguageelements = [element.text for element in self.driver_reverse.find_elements(By.XPATH, "//button[contains(@dl-test, 'translator-lang-option')]")]
+            except:
+                pass
+
+            self.driver_reverse.get("https://www.deepl.com/translator")
+            targetlanguageClass = WebDriverWait(self.driver_reverse, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "lmt__language_select--target")))
+            targetlanguageClass.click()
+        sourcelanguages = []
+        for element in sourcelanguageelements:
+            print(element,"src")
+            sourcelanguages.append(element)
+        targetlanguages = []
+        for element in targetlanguageelements:
+            print(element,"trgt")
+            targetlanguages.append(element)
+        targetlanguages1 = []
+        sourcelanguages1 = []
+        for string in sourcelanguages:
+            sourcelanguages1.append(string.split(" ")[0])
+        for string in targetlanguages:
+            targetlanguages1.append(string.split(" ")[0])
+        bothwaylanguages = list(set(sourcelanguages1) & set(targetlanguages1))
+        print(bothwaylanguages)
+        self.availablelanguages = bothwaylanguages
 
     def start(self,sourcelanguage,targetlanguage):
         if self.start_flag == True:
@@ -64,6 +104,8 @@ class DeepLHandlerC:
         # load the web page, click cookies
         self.driver_norm.get("https://www.deepl.com/translator")
         self.driver_reverse.get("https://www.deepl.com/translator")
+        self.getlanguages()
+        time.sleep(44)
         BothDrivers = [self.driver_norm,self.driver_reverse]
         for driver in BothDrivers:
             try:
