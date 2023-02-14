@@ -1,5 +1,5 @@
 cookies.txt
-!\venv\Lib\site-packages\undetected_chromedriver\__init__.py
+!/venv/Lib/site-packages/undetected_chromedriver/__init__.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
